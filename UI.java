@@ -1,8 +1,6 @@
-package UserInput;
-
+package userinput;
 import java.awt.Dimension;
 import java.awt.EventQueue;
-import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -11,10 +9,11 @@ import java.awt.Insets;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
-
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -31,35 +30,34 @@ import javax.swing.JComboBox;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.JTableHeader;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern; 
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
+import org.eclipse.wb.swing.FocusTraversalOnArray;
+import java.awt.Component;
+
 
 public class UI {
-
+private TextFieldCheck tCheck=new TextFieldCheck();
 private JFrame mFrame;
 	
 	private JPanel Source,Target,DataQuality,FileName,TableProperties,DataBase,DQData,ColumnMetaData,RequiredColumns,TPanel,SPanel,EPanel;
 	
 	private JTextArea SourceDirectory;
-	private JTextField SourceFileFormat,SourceFileType,FileHeader,ColumnDelimiter;
+	private JTextField SourceFileFormat,SourceFileType,ColumnDelimiter;
 	private JLabel SLabel1,SLabel2,SLabel3,SLabel4,SLabel5;
 	private JComboBox<String> fHeader;
 	
 	private JTextArea TargetDirectory;
 	private JTextField TargetFileFormat;
-	private JLabel TLabel1,TLabel2;
+	private JLabel TLabel2;
 	private JLabel TLabel1_1;
 	
 	private JLabel DQLabel1;
@@ -67,7 +65,6 @@ private JFrame mFrame;
 	private JComboBox<String> dqCheck;
 	
 	private JLabel FLabel1;
-	private JTextField FileNameRequired; 
 	private JComboBox<String> fNameRequired;
 	
 	private JLabel TPLabel1,TPLabel2,TPLabel3;
@@ -79,13 +76,14 @@ private JFrame mFrame;
 	private JLabel DLabel1,DLabel2,DLabel3,DLabel4,DLabel5;
 	
 	private JTextField Minimum,Maximum,ParameterName;
-	private JLabel DQDLabel1,DQDLabel2,DQDLabel3;
+	private JLabel DQDLabel1,DQDLabel2,DQDLabel3,wLabel1,wLabel2;
+	String DColumn[][]=new String[100][10];
+	int Index3=0;
 	Font font1 = new Font("Courier", Font.BOLD,16);
 	private JScrollPane scrollPane;
 	private JScrollPane scrollPane_1;
 	private JScrollPane scrollPane_2;
 	private JScrollPane scrollPane_3;
-	private JScrollPane scrollPane_4;
 	
 	
 	private JTextField ColumnName,DataType,Format,FunctionState,Transposable;
@@ -94,10 +92,10 @@ private JFrame mFrame;
 	private JLabel CLabel1,CLabel2,CLabel3,CLabel4,CLabel5;
 	private JComboBox<String> tPos;
 	
-	private JTextField rCurrentIndex,rColumnName,rDataType,rFormat;
+	private JTextField rCurrentIndex;
 	int Index2=0;
 	String RColumn[][]=new String[100][10];
-	private JLabel RLabel1,RLabel2,RLabel3,RLabel4;
+	private JLabel RLabel1;
 	
 	public void createGUI()
 	{     Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
@@ -107,11 +105,20 @@ private JFrame mFrame;
 		  int h=(int)height;
 	      mFrame = new JFrame("User Input");
 		  mFrame.setSize(w,h);
-	      mFrame.getContentPane().setLayout(new GridLayout(4,4));
+	      GridLayout gridLayout = new GridLayout(4,4);
+	      gridLayout.setVgap(2);
+	      gridLayout.setHgap(2);
+	      mFrame.getContentPane().setLayout(gridLayout);
 	      mFrame.addWindowListener(new WindowAdapter() {
 	          public void windowClosing(WindowEvent windowEvent){
 	             System.exit(0);
 	          }});
+	      mFrame.addComponentListener(new ComponentAdapter() {
+		        
+		         public void componentMoved(ComponentEvent e) {
+		            mFrame.setLocation(0,0);
+		         }
+		      });
 	      mFrame.setVisible(true); 
 	      
 	     /* YES/NO ComboBox */
@@ -138,7 +145,7 @@ private JFrame mFrame;
 	      c.insets = new Insets(4,4,4,4);
 	      GridBagLayout gbl_Source = new GridBagLayout();
 	      gbl_Source.rowHeights = new int[] {10, 10};
-	      gbl_Source.columnWidths = new int[] {0, 10, 10, 10};
+	      gbl_Source.columnWidths = new int[] {0, 10, 30, 30};
 	      gbl_Source.columnWeights = new double[]{0.0, 0.0};
 	      gbl_Source.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0};
 	      Source.setLayout(gbl_Source);
@@ -146,6 +153,7 @@ private JFrame mFrame;
 	      
 	      
 	      GridBagConstraints gbc_SLabel1 = new GridBagConstraints();
+	      gbc_SLabel1.weightx = 2.0;
 	      gbc_SLabel1.anchor = GridBagConstraints.WEST;
 	      gbc_SLabel1.insets = new Insets(2, 2, 5, 5);
 	      gbc_SLabel1.gridx = 0;
@@ -155,8 +163,9 @@ private JFrame mFrame;
 	      scrollPane = new JScrollPane();
 	      scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 	      GridBagConstraints gbc_scrollPane = new GridBagConstraints();
-	      gbc_scrollPane.fill = GridBagConstraints.BOTH;
-	      gbc_scrollPane.insets = new Insets(0, 0, 5, 0);
+	      gbc_scrollPane.anchor = GridBagConstraints.WEST;
+	      gbc_scrollPane.weightx = 2.0;
+	      gbc_scrollPane.insets = new Insets(2, 2, 5, 5);
 	      gbc_scrollPane.gridx = 1;
 	      gbc_scrollPane.gridy = 0;
 	      Source.add(scrollPane, gbc_scrollPane);
@@ -165,6 +174,7 @@ private JFrame mFrame;
 	      SLabel3=new JLabel("Source File Type");
 	      
 	      GridBagConstraints gbc_SLabel3 = new GridBagConstraints();
+	      gbc_SLabel3.weightx = 1.0;
 	      gbc_SLabel3.anchor = GridBagConstraints.WEST;
 	      gbc_SLabel3.insets = new Insets(2, 2, 5, 5);
 	      gbc_SLabel3.gridx = 0;
@@ -175,13 +185,15 @@ private JFrame mFrame;
 	      SourceFileFormat=new JTextField(5);
 	      
 	      GridBagConstraints gbc_SourceFileFormat = new GridBagConstraints();
+	      gbc_SourceFileFormat.weightx = 2.0;
 	      gbc_SourceFileFormat.anchor = GridBagConstraints.WEST;
-	      gbc_SourceFileFormat.insets = new Insets(2, 2, 5, 0);
+	      gbc_SourceFileFormat.insets = new Insets(2, 2, 5, 5);
 	      gbc_SourceFileFormat.gridx = 1;
 	      gbc_SourceFileFormat.gridy = 1;
 	      Source.add(SourceFileFormat, gbc_SourceFileFormat);
 	      SLabel2=new JLabel("Source File Format");
 	      GridBagConstraints gbc_SLabel2 = new GridBagConstraints();
+	      gbc_SLabel2.weightx = 1.0;
 	      gbc_SLabel2.anchor = GridBagConstraints.WEST;
 	      gbc_SLabel2.insets = new Insets(2, 2, 5, 5);
 	      gbc_SLabel2.gridx = 0;
@@ -190,22 +202,25 @@ private JFrame mFrame;
 	      SourceFileType=new JTextField(5);
 	      
 	      GridBagConstraints gbc_SourceFileType = new GridBagConstraints();
+	      gbc_SourceFileType.weightx = 2.0;
 	      gbc_SourceFileType.anchor = GridBagConstraints.WEST;
-	      gbc_SourceFileType.insets = new Insets(2, 2, 5, 0);
+	      gbc_SourceFileType.insets = new Insets(2, 2, 5, 5);
 	      gbc_SourceFileType.gridx = 1;
 	      gbc_SourceFileType.gridy = 2;
 	      Source.add(SourceFileType, gbc_SourceFileType);
 	      SLabel4=new JLabel("File Header");
 	      
 	      GridBagConstraints gbc_SLabel4 = new GridBagConstraints();
+	      gbc_SLabel4.weightx = 1.0;
 	      gbc_SLabel4.anchor = GridBagConstraints.WEST;
 	      gbc_SLabel4.insets = new Insets(2, 2, 5, 5);
 	      gbc_SLabel4.gridx = 0;
 	      gbc_SLabel4.gridy = 3;
 	      Source.add(SLabel4, gbc_SLabel4);
-	      FileHeader=new JTextField(3);
+	   
 	      
 	      GridBagConstraints gbc_FileHeader = new GridBagConstraints();
+	      gbc_FileHeader.weightx = 2.0;
 	      gbc_FileHeader.anchor = GridBagConstraints.WEST;
 	      gbc_FileHeader.insets = new Insets(2, 2, 5, 0);
 	      gbc_FileHeader.gridx = 1;
@@ -214,6 +229,7 @@ private JFrame mFrame;
 	      SLabel5=new JLabel("Coulumn Delimiter");	     	   
 	      
 	        GridBagConstraints gbc_SLabel5 = new GridBagConstraints();
+	        gbc_SLabel5.weightx = 1.0;
 	        gbc_SLabel5.anchor = GridBagConstraints.WEST;
 	        gbc_SLabel5.insets = new Insets(2, 2, 2, 5);
 	        gbc_SLabel5.gridx = 0;
@@ -222,6 +238,7 @@ private JFrame mFrame;
 	      ColumnDelimiter=new JTextField(2);
 	      
 	        GridBagConstraints gbc_ColumnDelimiter = new GridBagConstraints();
+	        gbc_ColumnDelimiter.weightx = 2.0;
 	        gbc_ColumnDelimiter.insets = new Insets(2, 2, 2, 0);
 	        gbc_ColumnDelimiter.anchor = GridBagConstraints.WEST;
 	        gbc_ColumnDelimiter.gridx = 1;
@@ -232,7 +249,7 @@ private JFrame mFrame;
 	      //Target Components
 	      Target=new JPanel();
 	      TargetFileFormat=new JTextField(5);
-	      TLabel1=new JLabel("TargetDirectory");
+	      
 	      
 	      
 	      
@@ -250,6 +267,7 @@ private JFrame mFrame;
 	      Target.setBorder(new TitledBorder(new EtchedBorder(), "Target"));
 	      
 	      GridBagConstraints gbc_TLabel1 = new GridBagConstraints();
+	      gbc_TLabel1.weightx = 1.0;
 	      gbc_TLabel1.anchor = GridBagConstraints.WEST;
 	      gbc_TLabel1.insets = new Insets(2, 2, 5, 5);
 	      gbc_TLabel1.gridy = 0;
@@ -259,6 +277,8 @@ private JFrame mFrame;
 	      scrollPane_1 = new JScrollPane();
 	      scrollPane_1.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 	      GridBagConstraints gbc_scrollPane_1 = new GridBagConstraints();
+	      gbc_scrollPane_1.ipadx = 1;
+	      gbc_scrollPane_1.weightx = 1.0;
 	      gbc_scrollPane_1.fill = GridBagConstraints.BOTH;
 	      gbc_scrollPane_1.insets = new Insets(0, 0, 5, 0);
 	      gbc_scrollPane_1.gridx = 1;
@@ -286,40 +306,44 @@ private JFrame mFrame;
 	      check2.addElement("YES");
 	      check2.addElement("NO");
 	      
-	      dqCheck = new JComboBox<String>(check2);    
-	      dqCheck.setSelectedIndex(0);
-	      
 	      DataQuality=new JPanel();
-	      GridBagLayout gbl_DataQuality = new GridBagLayout();
-	      DataQuality.setLayout(gbl_DataQuality);
 	      DQCheck=new JTextField(3);
 	      DQCheck.setHorizontalAlignment(SwingConstants.LEFT);
-	      DQLabel1=new JLabel("DQCheck");
-	      DQLabel1.setVerticalAlignment(SwingConstants.TOP);
-	      DQLabel1.setHorizontalAlignment(SwingConstants.LEFT);
 	      
 	      mFrame.getContentPane().add(DataQuality);
 	      DataQuality.setBorder(new TitledBorder(new EtchedBorder(), "Data Quality"));
-	    
+	      GridBagLayout gbl_DataQuality = new GridBagLayout();
+	      gbl_DataQuality.columnWidths = new int[] {0};
+	      gbl_DataQuality.rowHeights = new int[] {0};
+	      gbl_DataQuality.columnWeights = new double[]{0.0, 0.0};
+	      gbl_DataQuality.rowWeights = new double[]{0.0, 0.0};
+	      DataQuality.setLayout(gbl_DataQuality);
+	      DQLabel1=new JLabel("DQCheck");
+	      DQLabel1.setVerticalAlignment(SwingConstants.TOP);
+	      DQLabel1.setHorizontalAlignment(SwingConstants.LEFT);
 	      GridBagConstraints gbc_DQLabel1 = new GridBagConstraints();
-	      gbc_DQLabel1.insets = new Insets(2, 2, 2, 2);
-	      gbc_DQLabel1.gridy = 0;
+	      gbc_DQLabel1.anchor = GridBagConstraints.WEST;
+	      gbc_DQLabel1.weightx = 1.0;
 	      gbc_DQLabel1.gridx = 0;
-	      gbc_DQLabel1.anchor = GridBagConstraints.EAST;
+	      gbc_DQLabel1.gridy = 1;
 	      DataQuality.add(DQLabel1, gbc_DQLabel1);
+	      
+	      dqCheck = new JComboBox<String>(check2);
+	      dqCheck.setMaximumRowCount(2);
+	      dqCheck.setSelectedIndex(0);
+	      GridBagConstraints gbc_dqCheck = new GridBagConstraints();
+	      gbc_dqCheck.insets = new Insets(2, 2, 5, 5);
+	      gbc_dqCheck.weightx = 2.0;
+	      gbc_dqCheck.anchor = GridBagConstraints.WEST;
+	      gbc_dqCheck.gridx = 1;
+	      gbc_dqCheck.gridy = 1;
+	      DataQuality.add(dqCheck, gbc_dqCheck);
 	    
 	      GridBagConstraints gbc_DQCheck = new GridBagConstraints();
 	      gbc_DQCheck.insets = new Insets(2, 2, 2, 2);
 	      gbc_DQCheck.anchor = GridBagConstraints.WEST;
 	      gbc_DQCheck.gridy = 0;
 	      gbc_DQCheck.gridx = 1;
-	     /* DataQuality.add(DQCheck, gbc_DQCheck);*/
-	      
-	      GridBagConstraints gbc_dqCheck = new GridBagConstraints();
-	      gbc_dqCheck.insets = new Insets(2, 2, 2, 2);
-	      gbc_dqCheck.gridy = 0;
-	      gbc_dqCheck.gridx = 1;
-	      DataQuality.add(dqCheck, gbc_dqCheck);
 	      
 	      
 	      
@@ -328,74 +352,89 @@ private JFrame mFrame;
 	      final DefaultComboBoxModel<String> check3 = new DefaultComboBoxModel<String>();
 	      check3.addElement("YES");
 	      check3.addElement("NO");
-	      fNameRequired = new JComboBox<String>(check3);    
-	      fNameRequired.setSelectedIndex(0);
-	      
-	      FileName.setLayout(new GridBagLayout());
-	      FileNameRequired=new JTextField(3);
-	      FLabel1=new JLabel("File Name Required");
 	      
 	      mFrame.getContentPane().add(FileName);
 	      FileName.setBorder(new TitledBorder(new EtchedBorder(), "File Name"));
-	      GridBagConstraints gbc_FLabel1 = new GridBagConstraints();
-	      gbc_FLabel1.insets = new Insets(2, 2, 2, 2);
-	      gbc_FLabel1.anchor = GridBagConstraints.EAST;
-	      gbc_FLabel1.gridy = 0;
-	      gbc_FLabel1.gridx = 0;
-	      FileName.add(FLabel1, gbc_FLabel1);
-	      GridBagConstraints gbc_FileNameRequired = new GridBagConstraints();
-	      gbc_FileNameRequired.insets = new Insets(2, 2, 2, 2);
-	      gbc_FileNameRequired.anchor = GridBagConstraints.WEST;
-	      gbc_FileNameRequired.gridy = 0;
-	      gbc_FileNameRequired.gridx = 1;
-	      FileName.add(fNameRequired, gbc_FileNameRequired);
+	       GridBagLayout gbl_FileName = new GridBagLayout();
+	       gbl_FileName.columnWidths = new int[] {0, 30, 30, 0};
+	       gbl_FileName.rowHeights = new int[] {10, 10};
+	       gbl_FileName.columnWeights = new double[]{0.0, 0.0, Double.MIN_VALUE, 0.0, 0.0};
+	       gbl_FileName.rowWeights = new double[]{0.0, 0.0};
+	       FileName.setLayout(gbl_FileName);
+	       fNameRequired = new JComboBox<String>(check3);
+	       fNameRequired.setSelectedIndex(0);
+	       GridBagConstraints gbc_fNameRequired = new GridBagConstraints();
+	       gbc_fNameRequired.weightx = 0.12;
+	       gbc_fNameRequired.insets = new Insets(2, 2, 5, 5);
+	       gbc_fNameRequired.anchor = GridBagConstraints.WEST;
+	       gbc_fNameRequired.gridx = 4;
+	       gbc_fNameRequired.gridy = 1;
+	       FileName.add(fNameRequired, gbc_fNameRequired);
+	      
+	       FLabel1=new JLabel("File Name Required");
+	       GridBagConstraints gbc_FLabel1 = new GridBagConstraints();
+	       gbc_FLabel1.insets = new Insets(2, 2, 5, 5);
+	       gbc_FLabel1.anchor = GridBagConstraints.WEST;
+	       gbc_FLabel1.fill = GridBagConstraints.BOTH;
+	       gbc_FLabel1.gridx = 1;
+	       gbc_FLabel1.gridy = 1;
+	       FileName.add(FLabel1, gbc_FLabel1);
 	      
 	      //Table Properties Components
 	      TableProperties=new JPanel();
-	      TableProperties.setLayout(new GridBagLayout());
-	      TableName=new JTextField(15);
-	      ClusterColumn=new JTextField(15);
-	      Buckets=new JTextField(2);
-	      TPLabel1=new JLabel("Table Name");
-	      TPLabel2=new JLabel("Cluster Column");
-	      TPLabel3=new JLabel("Buckets");
 	     
 	      mFrame.getContentPane().add(TableProperties);
 	      TableProperties.setBorder(new TitledBorder(new EtchedBorder(), "Table Properties"));
+	      GridBagLayout gbl_TableProperties = new GridBagLayout();
+	      gbl_TableProperties.columnWidths = new int[]{50, 250, 0, 0};
+	      gbl_TableProperties.rowHeights = new int[]{50, 20, 20, 20, 0};
+	      gbl_TableProperties.columnWeights = new double[]{0.0, 0.0, 0.0, Double.MIN_VALUE};
+	      gbl_TableProperties.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+	      TableProperties.setLayout(gbl_TableProperties);
+	      TPLabel1=new JLabel("Table Name");
 	      GridBagConstraints gbc_TPLabel1 = new GridBagConstraints();
 	      gbc_TPLabel1.anchor = GridBagConstraints.WEST;
-	      gbc_TPLabel1.insets = new Insets(2, 2, 2, 2);
-	      gbc_TPLabel1.gridy = 0;
+	      gbc_TPLabel1.fill = GridBagConstraints.VERTICAL;
+	      gbc_TPLabel1.insets = new Insets(0, 0, 5, 0);
 	      gbc_TPLabel1.gridx = 0;
+	      gbc_TPLabel1.gridy = 1;
 	      TableProperties.add(TPLabel1, gbc_TPLabel1);
+	      TableName=new JTextField(15);
 	      GridBagConstraints gbc_TableName = new GridBagConstraints();
-	      gbc_TableName.insets = new Insets(2, 2, 2, 2);
-	      gbc_TableName.anchor = GridBagConstraints.WEST;
+	      gbc_TableName.anchor = GridBagConstraints.NORTHEAST;
+	      gbc_TableName.insets = new Insets(2, 2, 5, 5);
 	      gbc_TableName.gridx = 1;
-	      gbc_TableName.gridy = 0;
+	      gbc_TableName.gridy = 1;
 	      TableProperties.add(TableName, gbc_TableName);
+	      TPLabel2=new JLabel("Cluster Column");
 	      GridBagConstraints gbc_TPLabel2 = new GridBagConstraints();
 	      gbc_TPLabel2.anchor = GridBagConstraints.WEST;
-	      gbc_TPLabel2.gridy = 1;
+	      gbc_TPLabel2.fill = GridBagConstraints.VERTICAL;
+	      gbc_TPLabel2.insets = new Insets(0, 0, 5, 0);
 	      gbc_TPLabel2.gridx = 0;
+	      gbc_TPLabel2.gridy = 2;
 	      TableProperties.add(TPLabel2, gbc_TPLabel2);
+	      ClusterColumn=new JTextField(15);
 	      GridBagConstraints gbc_ClusterColumn = new GridBagConstraints();
-	      gbc_ClusterColumn.insets = new Insets(2, 2, 2, 2);
+	      gbc_ClusterColumn.anchor = GridBagConstraints.NORTHEAST;
+	      gbc_ClusterColumn.insets = new Insets(2, 2, 5, 5);
 	      gbc_ClusterColumn.gridx = 1;
-	      gbc_ClusterColumn.gridy = 1;
+	      gbc_ClusterColumn.gridy = 2;
 	      TableProperties.add(ClusterColumn, gbc_ClusterColumn);
-	      GridBagConstraints gbc_TPLabel3 = new GridBagConstraints();
-	      gbc_TPLabel3.insets = new Insets(2, 2, 2, 2);
-	      gbc_TPLabel3.anchor = GridBagConstraints.WEST;
-	      gbc_TPLabel3.gridy = 2;
-	      gbc_TPLabel3.gridx = 0;
-	      TableProperties.add(TPLabel3, gbc_TPLabel3);
+	      Buckets=new JTextField(15);
 	      GridBagConstraints gbc_Buckets = new GridBagConstraints();
+	      gbc_Buckets.anchor = GridBagConstraints.SOUTHEAST;
+	      gbc_Buckets.insets = new Insets(2, 2, 5, 5);
 	      gbc_Buckets.gridx = 1;
-	      gbc_Buckets.insets = new Insets(2, 2, 2, 2);
-	      gbc_Buckets.anchor = GridBagConstraints.WEST;
-	      gbc_Buckets.gridy = 2;
+	      gbc_Buckets.gridy = 3;
 	      TableProperties.add(Buckets, gbc_Buckets);
+	      TPLabel3=new JLabel("Buckets");
+	      GridBagConstraints gbc_TPLabel3 = new GridBagConstraints();
+	      gbc_TPLabel3.fill = GridBagConstraints.VERTICAL;
+	      gbc_TPLabel3.anchor = GridBagConstraints.WEST;
+	      gbc_TPLabel3.gridx = 0;
+	      gbc_TPLabel3.gridy = 3;
+	      TableProperties.add(TPLabel3, gbc_TPLabel3);
 	      
 	      //DataBase Components
 	      DataBase=new JPanel();
@@ -412,12 +451,14 @@ private JFrame mFrame;
 	      mFrame.getContentPane().add(DataBase);
 	      DataBase.setBorder(new TitledBorder(new EtchedBorder(), "DataBase"));
 	      GridBagConstraints gbc_DLabel1 = new GridBagConstraints();
+	      gbc_DLabel1.weightx = 1.0;
 	      gbc_DLabel1.insets = new Insets(2, 2, 5, 5);
 	      gbc_DLabel1.gridy = 0;
 	      gbc_DLabel1.gridx = 0;
 	      gbc_DLabel1.anchor = GridBagConstraints.WEST;
 	      DataBase.add(DLabel1, gbc_DLabel1);
 	      GridBagConstraints gbc_Type = new GridBagConstraints();
+	      gbc_Type.weightx = 2.0;
 	      gbc_Type.anchor = GridBagConstraints.WEST;
 	      gbc_Type.gridy = 0;
 	      gbc_Type.gridx = 1;
@@ -433,12 +474,13 @@ private JFrame mFrame;
 	      scrollPane_2 = new JScrollPane();
 	      scrollPane_2.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 	      GridBagConstraints gbc_scrollPane_2 = new GridBagConstraints();
+	      gbc_scrollPane_2.anchor = GridBagConstraints.WEST;
 	      gbc_scrollPane_2.fill = GridBagConstraints.BOTH;
 	      gbc_scrollPane_2.insets = new Insets(0, 0, 5, 0);
 	      gbc_scrollPane_2.gridx = 1;
 	      gbc_scrollPane_2.gridy = 1;
 	      DataBase.add(scrollPane_2, gbc_scrollPane_2);
-	      URL=new JTextArea(2,15);
+	      URL=new JTextArea(2,20);
 	      scrollPane_2.setViewportView(URL);
 	      GridBagConstraints gbc_DLabel3 = new GridBagConstraints();
 	      gbc_DLabel3.anchor = GridBagConstraints.WEST;
@@ -483,53 +525,104 @@ private JFrame mFrame;
 	      
 	      //DQData Components
 	      DQData=new JPanel();
-	      DQData.setLayout(new GridBagLayout());
+	      GridBagLayout gbl_DQData = new GridBagLayout();
+	      gbl_DQData.columnWidths = new int[] {0};
+	      gbl_DQData.rowHeights = new int[] {0, 0, 0, 0, 0, 0};
+	      gbl_DQData.columnWeights = new double[]{0.0, 0.0, 0.0};
+	      gbl_DQData.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+	      DQData.setLayout(gbl_DQData);
 	      Minimum=new JTextField(15);
-	      Maximum=new JTextField(15);
-	      ParameterName=new JTextField(15);
-	      DQDLabel1=new JLabel("Minimum");
-	      DQDLabel2=new JLabel("Maximum");
-	      DQDLabel3=new JLabel("ParameterName");
-	      
-	      mFrame.getContentPane().add(DQData);
-	      DQData.setBorder(new TitledBorder(new EtchedBorder(), "DQData"));
-	      GridBagConstraints gbc_DQDLabel1 = new GridBagConstraints();
-	      gbc_DQDLabel1.insets = new Insets(2, 2, 2, 2);
-	      gbc_DQDLabel1.gridy = 0;
-	      gbc_DQDLabel1.gridx = 0;
-	      gbc_DQDLabel1.anchor = GridBagConstraints.WEST;
-	      DQData.add(DQDLabel1, gbc_DQDLabel1);
 	      GridBagConstraints gbc_Minimum = new GridBagConstraints();
-	      gbc_Minimum.insets = new Insets(2, 2, 2, 2);
-	      gbc_Minimum.gridy = 0;
-	      gbc_Minimum.gridx = 1;
+	      gbc_Minimum.weightx = 1.0;
 	      gbc_Minimum.anchor = GridBagConstraints.WEST;
+	      gbc_Minimum.insets = new Insets(2, 2, 5, 5);
+	      gbc_Minimum.gridx = 1;
+	      gbc_Minimum.gridy = 1;
 	      DQData.add(Minimum, gbc_Minimum);
+	      DQDLabel1=new JLabel("Minimum");
+	      GridBagConstraints gbc_DQDLabel1 = new GridBagConstraints();
+	      gbc_DQDLabel1.weightx = 0.5;
+	      gbc_DQDLabel1.anchor = GridBagConstraints.EAST;
+	      gbc_DQDLabel1.fill = GridBagConstraints.BOTH;
+	      gbc_DQDLabel1.insets = new Insets(2, 2, 5, 5);
+	      gbc_DQDLabel1.gridx = 0;
+	      gbc_DQDLabel1.gridy = 1;
+	      DQData.add(DQDLabel1, gbc_DQDLabel1);
+	      wLabel1=new JLabel("");
+	      wLabel1.setFont(new Font("Calibri", Font.BOLD | Font.ITALIC, 12));
+	      GridBagConstraints gbc_wLabel1 = new GridBagConstraints();
+	      gbc_wLabel1.anchor = GridBagConstraints.WEST;
+	      gbc_wLabel1.weightx = 0.5;
+	      gbc_wLabel1.fill = GridBagConstraints.BOTH;
+	      gbc_wLabel1.insets = new Insets(0, 0, 5, 0);
+	      gbc_wLabel1.gridx = 2;
+	      gbc_wLabel1.gridy = 1;
+	      DQData.add(wLabel1, gbc_wLabel1);
+	      DQDLabel2=new JLabel("Maximum");
 	      GridBagConstraints gbc_DQDLabel2 = new GridBagConstraints();
-	      gbc_DQDLabel2.insets = new Insets(2, 2, 2, 2);
+	      gbc_DQDLabel2.anchor = GridBagConstraints.EAST;
+	      gbc_DQDLabel2.weightx = 0.5;
+	      gbc_DQDLabel2.fill = GridBagConstraints.BOTH;
+	      gbc_DQDLabel2.insets = new Insets(2, 2, 5, 5);
 	      gbc_DQDLabel2.gridx = 0;
-	      gbc_DQDLabel2.gridy = 1;
-	      gbc_DQDLabel2.anchor = GridBagConstraints.WEST;
+	      gbc_DQDLabel2.gridy = 2;
 	      DQData.add(DQDLabel2, gbc_DQDLabel2);
+	      Maximum=new JTextField(15);
 	      GridBagConstraints gbc_Maximum = new GridBagConstraints();
-	      gbc_Maximum.insets = new Insets(2, 2, 2, 2);
-	      gbc_Maximum.gridx = 1;
-	      gbc_Maximum.gridy = 1;
+	      gbc_Maximum.weightx = 1.0;
 	      gbc_Maximum.anchor = GridBagConstraints.WEST;
+	      gbc_Maximum.insets = new Insets(2, 2, 5, 5);
+	      gbc_Maximum.gridx = 1;
+	      gbc_Maximum.gridy = 2;
 	      DQData.add(Maximum, gbc_Maximum);
+	      wLabel2=new JLabel("");
+	      wLabel2.setFont(new Font("Calibri", Font.BOLD | Font.ITALIC, 12));
+	      GridBagConstraints gbc_wLabel2 = new GridBagConstraints();
+	      gbc_wLabel2.anchor = GridBagConstraints.WEST;
+	      gbc_wLabel2.weightx = 0.5;
+	      gbc_wLabel2.fill = GridBagConstraints.BOTH;
+	      gbc_wLabel2.insets = new Insets(2, 2, 5, 5);
+	      gbc_wLabel2.gridx = 2;
+	      gbc_wLabel2.gridy = 2;
+	      DQData.add(wLabel2, gbc_wLabel2);
+	      DQDLabel3=new JLabel("Parameter Name");
 	      GridBagConstraints gbc_DQDLabel3 = new GridBagConstraints();
-	      gbc_DQDLabel3.insets = new Insets(2, 2, 2, 2);
-	      gbc_DQDLabel3.gridx = 0;
-	      gbc_DQDLabel3.gridy = 2;
+	      gbc_DQDLabel3.weightx = 0.5;
 	      gbc_DQDLabel3.anchor = GridBagConstraints.WEST;
+	      gbc_DQDLabel3.fill = GridBagConstraints.VERTICAL;
+	      gbc_DQDLabel3.insets = new Insets(2, 2, 5, 5);
+	      gbc_DQDLabel3.gridx = 0;
+	      gbc_DQDLabel3.gridy = 3;
 	      DQData.add(DQDLabel3, gbc_DQDLabel3);
+	      ParameterName=new JTextField(15);
 	      GridBagConstraints gbc_ParameterName = new GridBagConstraints();
-	      gbc_ParameterName.insets = new Insets(2, 2, 2, 2);
-	      gbc_ParameterName.gridx = 1;
-	      gbc_ParameterName.gridy = 2;
 	      gbc_ParameterName.anchor = GridBagConstraints.WEST;
+	      gbc_ParameterName.insets = new Insets(2, 2, 5, 5);
+	      gbc_ParameterName.gridx = 1;
+	      gbc_ParameterName.gridy = 3;
 	      DQData.add(ParameterName, gbc_ParameterName);
 	      
+	      JButton dAdd=new JButton("Add");
+	      JButton dView=new JButton("View");
+	      dAdd.addActionListener(new DAddClickListener());
+	      dView.addActionListener(new DViewClickListener());
+	      DQData.setBorder(new TitledBorder(new EtchedBorder(), "DQData"));
+	      GridBagConstraints gbc_dAdd = new GridBagConstraints();
+	      gbc_dAdd.insets = new Insets(2, 2, 5, 5);
+	      gbc_dAdd.anchor = GridBagConstraints.WEST;
+	      gbc_dAdd.weightx = 0.25;
+	      gbc_dAdd.gridx = 1;
+	      gbc_dAdd.gridy = 4;
+	      DQData.add(dAdd, gbc_dAdd);
+	      GridBagConstraints gbc_dView = new GridBagConstraints();
+	      gbc_dView.insets = new Insets(2, 2, 5, 5);
+	      gbc_dView.anchor = GridBagConstraints.WEST;
+	      gbc_dView.weightx = 0.25;
+	      gbc_dView.gridx = 1;
+	      gbc_dView.gridy = 5;
+	      DQData.add(dView, gbc_dView);
+	      mFrame.getContentPane().add(DQData);
+	      DQData.setFocusTraversalPolicy(new FocusTraversalOnArray(new Component[]{DQDLabel1, Minimum, wLabel1, DQDLabel2, Maximum, wLabel2, DQDLabel3, ParameterName}));
 	      //ColumnMetaData Components
 	      ColumnMetaData=new JPanel();
 	      
@@ -556,7 +649,7 @@ private JFrame mFrame;
 	      gbc_Transposable.gridx = 1;
 	      gbc_Transposable.gridy = 4;
 	      ColumnMetaData.add(tPos, gbc_Transposable);
-	      CLabel5=new JLabel("Taransposable");
+	      CLabel5=new JLabel("Transposable");
 	      GridBagConstraints gbc_CLabel5 = new GridBagConstraints();
 	      gbc_CLabel5.anchor = GridBagConstraints.WEST;
 	      gbc_CLabel5.fill = GridBagConstraints.BOTH;
@@ -615,6 +708,7 @@ private JFrame mFrame;
 	      
 	      ColumnName=new JTextField(15);
 	      GridBagConstraints gbc_ColumnName = new GridBagConstraints();
+	      gbc_ColumnName.weightx = 0.5;
 	      gbc_ColumnName.anchor = GridBagConstraints.WEST;
 	      gbc_ColumnName.fill = GridBagConstraints.BOTH;
 	      gbc_ColumnName.insets = new Insets(2, 2, 2, 2);
@@ -624,6 +718,7 @@ private JFrame mFrame;
 	      CLabel1=new JLabel("Column Name");
 	      
 	      GridBagConstraints gbc_CLabel1 = new GridBagConstraints();
+	      gbc_CLabel1.weightx = 0.25;
 	      gbc_CLabel1.insets = new Insets(2, 2, 2, 2);
 	      gbc_CLabel1.anchor = GridBagConstraints.WEST;
 	      gbc_CLabel1.gridwidth = 2;
@@ -652,44 +747,46 @@ private JFrame mFrame;
 	     
 	      //RequiredColumns Components
 	      RequiredColumns=new JPanel();
-	      JButton rviewButton=new JButton("View");
-	      rviewButton.addActionListener(new RviewActionListener());
 	      mFrame.getContentPane().add(RequiredColumns);
 	      RequiredColumns.setBorder(new TitledBorder(new EtchedBorder(), "Required Columns"));
 	      GridBagLayout gbl_RequiredColumns = new GridBagLayout();
-	      gbl_RequiredColumns.columnWidths = new int[] {0, 0};
-	      gbl_RequiredColumns.rowHeights = new int[] {0, 0, 0, 0, 0, 0};
-	      gbl_RequiredColumns.columnWeights = new double[]{0.0, 0.0};
-	      gbl_RequiredColumns.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+	      gbl_RequiredColumns.columnWidths = new int[]{50, 150, 100, 0};
+	      gbl_RequiredColumns.rowHeights = new int[]{75, 20, 20, 0};
+	      gbl_RequiredColumns.columnWeights = new double[]{0.0, 0.0, 0.0, Double.MIN_VALUE};
+	      gbl_RequiredColumns.rowWeights = new double[]{0.0, 0.0, 0.0, Double.MIN_VALUE};
 	      RequiredColumns.setLayout(gbl_RequiredColumns);
 	      RLabel1=new JLabel("Current Index");
 	      GridBagConstraints gbc_RLabel1 = new GridBagConstraints();
+	      gbc_RLabel1.weightx = 0.25;
 	      gbc_RLabel1.anchor = GridBagConstraints.WEST;
-	      gbc_RLabel1.insets = new Insets(2, 2, 2, 2);
+	      gbc_RLabel1.fill = GridBagConstraints.BOTH;
+	      gbc_RLabel1.insets = new Insets(2, 2, 5, 5);
 	      gbc_RLabel1.gridx = 0;
-	      gbc_RLabel1.gridy = 0;
+	      gbc_RLabel1.gridy = 1;
 	      RequiredColumns.add(RLabel1, gbc_RLabel1);
 	      rCurrentIndex=new JTextField(2);
 	      GridBagConstraints gbc_rCurrentIndex = new GridBagConstraints();
+	      gbc_rCurrentIndex.weightx = 0.25;
 	      gbc_rCurrentIndex.anchor = GridBagConstraints.WEST;
-	      gbc_rCurrentIndex.insets = new Insets(2, 2, 2, 2 );
+	      gbc_rCurrentIndex.insets = new Insets(0, 0, 5, 5);
 	      gbc_rCurrentIndex.gridx = 1;
-	      gbc_rCurrentIndex.gridy = 0;
+	      gbc_rCurrentIndex.gridy = 1;
 	      RequiredColumns.add(rCurrentIndex, gbc_rCurrentIndex);
-	   
-	      JButton rAdd=new JButton("Add");
-	      rAdd.addActionListener(new rAddClickListener());
-	      GridBagConstraints gbc_rAdd = new GridBagConstraints();
-	      gbc_rAdd.insets = new Insets(2, 2, 2, 2);
-	      gbc_rAdd.anchor = GridBagConstraints.WEST;
-	      gbc_rAdd.gridx = 0;
-	      gbc_rAdd.gridy = 4;
-	      RequiredColumns.add(rAdd, gbc_rAdd);
+	      
+	         JButton rAdd=new JButton("Add");
+	         rAdd.addActionListener(new rAddClickListener());
+	         GridBagConstraints gbc_rAdd = new GridBagConstraints();
+	         gbc_rAdd.fill = GridBagConstraints.BOTH;
+	         gbc_rAdd.insets = new Insets(0, 0, 5, 0);
+	         gbc_rAdd.gridx = 2;
+	         gbc_rAdd.gridy = 1;
+	         RequiredColumns.add(rAdd, gbc_rAdd);
+	      JButton rviewButton=new JButton("View");
+	      rviewButton.addActionListener(new RviewActionListener());
 	      GridBagConstraints gbc_rviewButton = new GridBagConstraints();
-	      gbc_rviewButton.insets = new Insets(2, 2, 2, 2);
-	      gbc_rviewButton.anchor = GridBagConstraints.WEST;
-	      gbc_rviewButton.gridx = 0;
-	      gbc_rviewButton.gridy = 5;
+	      gbc_rviewButton.fill = GridBagConstraints.BOTH;
+	      gbc_rviewButton.gridx = 2;
+	      gbc_rviewButton.gridy = 2;
 	      RequiredColumns.add(rviewButton, gbc_rviewButton);
 	      
 	      
@@ -716,11 +813,14 @@ private JFrame mFrame;
 	/* Creating the XML Document */
    public class ButtonClickListener implements ActionListener
    {   String Input1,Input2;
-	   public void actionPerformed(ActionEvent ae)
-	   {
+	 //Method for verifying the Input Fields 
+    
+      public void actionPerformed(ActionEvent ae)
+	   {   
+		   		   
 		   String command=ae.getActionCommand();
 		   if(command.equals("Submit"))
-		   {   
+		   {  
 			  try
 			  {
 				  			 DocumentBuilderFactory dbFactory =
@@ -814,17 +914,22 @@ private JFrame mFrame;
 					         //DQData
 					         Element dqdata=doc.createElement("DQData");
 					         rootElement.appendChild(dqdata);
-					         Element column=doc.createElement("Column");
-					         dqdata.appendChild(column);
-					         Element minimum=doc.createElement("Minimum");
-					         column.appendChild(minimum);
-					         minimum.appendChild(doc.createTextNode(Minimum.getText()));
-					         Element maximum=doc.createElement("Maximum");
-					         column.appendChild(maximum);
-					         maximum.appendChild(doc.createTextNode(Maximum.getText()));
-					         Element parametername=doc.createElement("ParameterName");
-					         column.appendChild(parametername);
-					         parametername.appendChild(doc.createTextNode(ParameterName.getText()));
+					         Element col2,minimum,maximum,parametername;
+					         for(int i=0;i<Index3;i++)
+					         {
+					        	 col2=doc.createElement("Column");
+					        	 dqdata.appendChild(col2);
+					        	 minimum=doc.createElement("Minimum");
+					        	 col2.appendChild(minimum);
+					        	 minimum.appendChild(doc.createTextNode(DColumn[i][0]));
+					        	 maximum=doc.createElement("Maximum");
+					        	 col2.appendChild(maximum);
+					        	 maximum.appendChild(doc.createTextNode(DColumn[i][1]));
+					        	 parametername=doc.createElement("ParameterName");
+					        	 col2.appendChild(parametername);
+					        	 parametername.appendChild(doc.createTextNode(DColumn[i][2]));
+					        	 
+					         }
 					         
 					         //	ColumnMetaData
 					         Element columnmetadata=doc.createElement("ColumnMetaDeta");
@@ -876,9 +981,7 @@ private JFrame mFrame;
 					        	 rFrmt=doc.createElement("Format");
 					        	 col1.appendChild(rFrmt);
 					        	 rFrmt.appendChild(doc.createTextNode(RColumn[j][3]));
-					        	 
-					        	 
-					        			 
+					        	 					        			 
 					         }
 					         
 					         
@@ -949,9 +1052,18 @@ private JFrame mFrame;
 	   
  }
  public void createRequiredDataColumns()
- {     int i=Integer.parseInt(rCurrentIndex.getText());
+ {     
 	   //Checking whether the required index exist or whether it is already added to the required column list	   
  	   int flag=0;
+ 	   flag=tCheck.NumCheck(rCurrentIndex.getText());
+ 	   if(flag==-1)
+ 	   {
+ 		   JOptionPane.showConfirmDialog(null,"Incorrect Index","Warning",JOptionPane.DEFAULT_OPTION,JOptionPane.WARNING_MESSAGE);
+		   rCurrentIndex.setText("");
+		   return;  
+ 	   }
+ 	   flag=0;
+ 	   int i=Integer.parseInt(rCurrentIndex.getText());
 	   for(int k=0;k<Index1;k++)
 	   {
 		   if(i==k)
@@ -978,9 +1090,7 @@ private JFrame mFrame;
 		   JOptionPane.showConfirmDialog(null,"Index Already Exists","Warning",JOptionPane.DEFAULT_OPTION,JOptionPane.WARNING_MESSAGE);
 		   rCurrentIndex.setText("");
 		   return;
-	   }
-	   
-	   
+	   }	   
        RColumn[Index2][0]=new String(rCurrentIndex.getText());	   
 	   RColumn[Index2][1]=new String(SColumn[i][0]);
 	   RColumn[Index2][2]=new String(SColumn[i][1]);
@@ -1023,7 +1133,12 @@ public class ViewColumnMetaData
 		viewFrame.setResizable(false);
 		viewFrame.setVisible(true);
 		viewFrame.getContentPane().setLayout(null);    
-		
+		viewFrame.addComponentListener(new ComponentAdapter() {
+	        
+	         public void componentMoved(ComponentEvent e) {
+	            viewFrame.setLocation(300,20);
+	         }
+	      });
 		ViewCMD();
 		
 		sp.setSize(new Dimension(595,500));
@@ -1033,11 +1148,8 @@ public class ViewColumnMetaData
 		viewFrame.getContentPane().add(sp);   
 		viewFrame.getContentPane().add(bPanel);
 		
-		
 		bPanel.add(removeColumn);
-		
-		
-		
+				
 		//Removing ColumnMetaData
 		removeColumn.addActionListener(new ActionListener() {
 			
@@ -1108,10 +1220,10 @@ public class ViewColumnMetaData
 		{
 			for(int l=k;l<Index2;l++)
 			{
-				SColumn[l][0]=SColumn[l+1][0];
-				SColumn[l][1]=SColumn[l+1][1];
-				SColumn[l][2]=SColumn[l+1][2];
-				SColumn[l][3]=SColumn[l+1][3];
+				RColumn[l][0]=RColumn[l+1][0];
+				RColumn[l][1]=RColumn[l+1][1];
+				RColumn[l][2]=RColumn[l+1][2];
+				RColumn[l][3]=RColumn[l+1][3];
 			}
 			Index2--;
 		}
@@ -1127,8 +1239,7 @@ public class RviewActionListener implements ActionListener{
 	   {
 		new ViewRequiredColumnData();
 	   }
-	
-}
+	}
 
 public class ViewRequiredColumnData
 {   private JFrame viewFrame;
@@ -1150,7 +1261,12 @@ public class ViewRequiredColumnData
 		viewFrame.setResizable(false);
 		viewFrame.setVisible(true);
 		viewFrame.getContentPane().setLayout(null);    
-		
+		viewFrame.addComponentListener(new ComponentAdapter() {
+	        
+	         public void componentMoved(ComponentEvent e) {
+	            viewFrame.setLocation(300,20);
+	         }
+	      });
 		ViewCMD();
 		
 		sp.setSize(new Dimension(595,500));
@@ -1159,13 +1275,10 @@ public class ViewRequiredColumnData
 		bPanel.setSize(new Dimension(600,50));
 		viewFrame.getContentPane().add(sp);   
 		viewFrame.getContentPane().add(bPanel);
-		
-		
+				
 		bPanel.add(removeColumn);
-		
-		
-		
-		//Removing ColumnMetaData
+			
+		//Removing ReqColumnMetaData
 		removeColumn.addActionListener(new ActionListener() {
 			
 			@Override
@@ -1210,7 +1323,7 @@ public class ViewRequiredColumnData
 		jt.getTableHeader().setReorderingAllowed(false);
 		jt.getTableHeader().setResizingAllowed(false);	
 		jt.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		//Viewing the Column Meta Data
+		//Viewing the Req Column Meta Data
 				Object[] row=new Object[6];
 				for(int i=0;i<Index2;i++)
 				{
@@ -1223,7 +1336,130 @@ public class ViewRequiredColumnData
 				}
 	}
 }
+//Adding Data Quality Data Columns
+public class DAddClickListener implements ActionListener
+{
 
+	@Override
+	public void actionPerformed(ActionEvent arg0) {
+		// TODO Auto-generated method stub
+		   DColumn[Index3][0]=new String(Minimum.getText());	   
+		   DColumn[Index3][1]=new String(Maximum.getText());
+		   DColumn[Index3][2]=new String(ParameterName.getText());
+		   Minimum.setText("");	    
+		   Maximum.setText("");
+		   ParameterName.setText("");
+		   ColumnMetaData.revalidate();
+		   ColumnMetaData.repaint();
+		   Index3++;
+	}
+	
+}
+//For viewing data quality data columns
+public class DViewClickListener implements ActionListener
+{
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		// TODO Auto-generated method stub
+		new DataQualityDataColumns();
+	}
+	
+}
+public class DataQualityDataColumns
+{   private JFrame viewFrame;
+	private JTable jt=new JTable(); 
+	private JScrollPane sp=new JScrollPane(jt);
+	private JPanel bPanel=new JPanel();
+	private JButton removeColumn=new JButton("Remove");
+	DefaultTableModel model=new DefaultTableModel();
+	public DataQualityDataColumns()
+	{
+		initialize();
+	}
+	private void initialize()
+	{   mFrame.setEnabled(false);
+		viewFrame = new JFrame();
+		viewFrame.setSize(600,600);
+		viewFrame.setTitle("Data Quality Data");
+		viewFrame.setLocationRelativeTo(null); 
+		viewFrame.setResizable(false);
+		viewFrame.setVisible(true);
+		viewFrame.getContentPane().setLayout(null);    
+		viewFrame.addComponentListener(new ComponentAdapter() {
+	        
+	         public void componentMoved(ComponentEvent e) {
+	            viewFrame.setLocation(300,20);
+	         }
+	      });
+		ViewCMD();
+		
+		sp.setSize(new Dimension(595,500));
+		removeColumn.setBounds(0,550,100,30);
+		bPanel.setBounds(0,510,600,90);
+		bPanel.setSize(new Dimension(600,50));
+		viewFrame.getContentPane().add(sp);   
+		viewFrame.getContentPane().add(bPanel);
+				
+		bPanel.add(removeColumn);
+			
+		//Removing ColumnMetaData
+		removeColumn.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// TODO Auto-generated method stub
+				int i=jt.getSelectedRow();
+				if(i>=0)
+				{
+					RemoveColumn(i);
+				}
+				
+			}
+		});
+		viewFrame.addWindowListener(new WindowAdapter()
+        {
+            @Override
+            public void windowClosing(WindowEvent e)
+            {   mFrame.setEnabled(true);
+                e.getWindow().dispose();
+            }
+        });
+		viewFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+	}
+	public void RemoveColumn(int index)
+	{    
+		for(int j=index;j<Index3;j++)
+		{
+			DColumn[j][0]=DColumn[j+1][0];
+			DColumn[j][1]=DColumn[j+1][1];
+			DColumn[j][2]=DColumn[j+1][2];
+			
+		}
+		Index3--;
+		ViewCMD();
+	}
+	public void ViewCMD()
+	{
+		Object[] columns={"Index","Minimum","Maximum","Parameter Name"};
+		model.setColumnIdentifiers(columns);
+		jt.setModel(model);
+		model.setRowCount(0);
+		jt.getTableHeader().setReorderingAllowed(false);
+		jt.getTableHeader().setResizingAllowed(false);	
+		jt.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		//Viewing the Column Meta Data
+				Object[] row=new Object[4];
+				for(int i=0;i<Index3;i++)
+				{
+					row[0]=i;
+					row[1]=DColumn[i][0];
+					row[2]=DColumn[i][1];
+					row[3]=DColumn[i][2];
+					model.addRow(row);
+				}
+	}
+}
 
 	/**
 	 * Launch the application.
@@ -1255,5 +1491,4 @@ public class ViewRequiredColumnData
 	private void initialize() {
 		createGUI();
 	}
-
 }
